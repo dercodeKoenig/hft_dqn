@@ -1,6 +1,7 @@
 
 from collections import deque
 import copy
+from Candle import Candle
 
 
 class MultiTimeframeCandleManager:
