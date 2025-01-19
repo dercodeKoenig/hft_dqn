@@ -1,5 +1,6 @@
 
 from collections import deque
+import copy
 
 
 class MultiTimeframeCandleManager:
