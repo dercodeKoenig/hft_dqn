@@ -1,16 +1,7 @@
 import time
 import MetaTrader5 as mt5
 from datetime import datetime, timedelta
-
-
-class Candle:
-    def __init__(self, o=0, h=0, l=0, c=0, t=0):
-        self.o = o
-        self.h = h
-        self.l = l
-        self.c = c
-        self.t = t
-
+from Candle import Candle
 
 def get_prices(symbol, tf, lookback):
     t = int(time.time()) + 60 * 60 * 24 * 7
