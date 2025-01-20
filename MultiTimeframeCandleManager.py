@@ -26,21 +26,23 @@ class MultiTimeframeCandleManager:
     opening_range_gap_ce_1 = 0
     opening_range_gap_end_1 = 0
     
-    fp_low_3 = 0
+    fp_start_3 = 0
     fp_ce_3 = 0
-    fp_high_3 = 0
+    fp_end_3 = 0
     
-    fp_low_2 = 0
+    fp_start_2 = 0
     fp_ce_2 = 0
-    fp_high_2 = 0
+    fp_end_2 = 0
     
-    fp_low_1 = 0
+    fp_start_1 = 0
     fp_ce_1 = 0
-    fp_high_1 = 0
+    fp_end_1 = 0
         
     last_settlement_price = 0
 
-
+    
+    hunt_fvg = False
+    
     def __init__(self):
         l = 60
         self.m1_candles = deque(maxlen = l)
@@ -75,6 +77,8 @@ class MultiTimeframeCandleManager:
     
         if(candle.t.hour == 9 and candle.t.minute == 30 and candle.t.second == 0):
             opening_price = candle.o
+
+            self.hunt_fvg = True
             
             self.opening_range_gap_start_3 = self.opening_range_gap_start_2
             self.opening_range_gap_start_2 = self.opening_range_gap_start_1
@@ -86,7 +90,31 @@ class MultiTimeframeCandleManager:
             self.opening_range_gap_end_1 = opening_price
             self.opening_range_gap_start_1 = self.last_settlement_price
             self.opening_range_gap_ce_1 = (opening_price+self.last_settlement_price) / 2
-            
+
+        if self.hunt_fvg and candle.t.hour == 9 and candle.t.minute >= 32:
+            new_fvg = [0,0,0]
+            if self.m1_candles[-1].l > self.m1_candles[-3].h:
+                new_fvg = [self.m1_candles[-3].h, (self.m1_candles[-3].h+self.m1_candles[-1].l) / 2 ,self.m1_candles[-1].l]
+            if self.m1_candles[-1].h < self.m1_candles[-3].l:
+                new_fvg = [self.m1_candles[-3].l, (self.m1_candles[-3].l+self.m1_candles[-1].h) / 2 ,self.m1_candles[-1].h]
+
+            if(new_fvg[1] != 0):
+
+                self.hunt_fvg = False
+                
+                self.fp_start_3 = self.fp_start_2
+                self.fp_ce_3 = self.fp_ce_2
+                self.fp_end_3 = self.fp_end_2
+                
+                self.fp_start_2 = self.fp_start_1
+                self.fp_ce_2 = self.fp_ce_1
+                self.fp_end_2 = self.fp_end_1
+        
+                self.fp_start_1 = new_fvg[0]
+                self.fp_ce_1 = new_fvg[1]
+                self.fp_end_1 = new_fvg[2]
+                
+                
     
 
         # m5 candles
@@ -175,6 +203,19 @@ class MultiTimeframeCandleManager:
             self.opening_range_gap_start_1,
             self.opening_range_gap_ce_1,
             self.opening_range_gap_end_1,
+
+            
+            self.fp_start_3,
+            self.fp_ce_3,
+            self.fp_end_3,
+
+            self.fp_start_2,
+            self.fp_ce_2,
+            self.fp_end_2,
+
+            self.fp_start_1,
+            self.fp_ce_1,
+            self.fp_end_1,
             ]
 
         ret_candles =       [
