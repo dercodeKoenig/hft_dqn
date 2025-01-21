@@ -4,6 +4,9 @@
 # In[1]:
 
 
+import os
+#os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
 from datetime import datetime, timedelta
 import time
 from collections import deque
@@ -72,13 +75,13 @@ model = tf.keras.Model(inputs = [chart_m15, chart_m5, chart_m1, pdas, minutes, c
 model.summary()
 
 
-# In[ ]:
-
-
-
-
-
 # In[3]:
+
+
+model.load_weights("model.weights.h5")
+
+
+# In[4]:
 
 
 def relative (value, center, r):

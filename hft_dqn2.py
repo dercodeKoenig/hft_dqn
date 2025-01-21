@@ -24,7 +24,7 @@ len(candles)
 
 gamma = 0.99
 memory_len = 100000
-batch_size = 32
+batch_size = 128
 
 path = "./"
 
