@@ -134,7 +134,8 @@ last_close = 0
 last_state = None
 last_action = 0
 
-for index in tqdm(range(len(candles))):
+#for index in tqdm(range(len(candles))):
+for index in range(len(candles)):
 
         ret = m.push_m1_candle(candles[index])
         midnight_open, midnight_opening_range_high,midnight_opening_range_low, pdas, current_close, current_time, charts = ret
