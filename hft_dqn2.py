@@ -24,7 +24,7 @@ len(candles)
 
 gamma = 0.99
 memory_len = 100000
-batch_size = 16
+batch_size = 32
 
 path = "./"
 
@@ -284,7 +284,6 @@ sarts_memory = deque(maxlen = memory_len)
 
 loss_mean = []
 q_mean = []
-rewards = []
 
 try:
     model.load_weights(path+"model.weights.h5")
@@ -292,7 +291,6 @@ try:
 
     loss_mean = obj_load(path+"loss")
     q_mean = obj_load(path+"q")
-    rewards = obj_load(path+"rewards")
 except:
     print("unable to load data")
 
@@ -304,7 +302,6 @@ def save():
             model.save_weights(path+"model.weights.h5")
             obj_save(loss_mean, path+"loss")
             obj_save(q_mean, path+"q")
-            obj_save(rewards, path+"rewards")
             print("saved progress")
 
 
