@@ -13,6 +13,9 @@ class MultiTimeframeCandleManager:
     midnight_open = 0
     midnight_opening_range_low = 0
     midnight_opening_range_high = 0
+
+    new_midnight_opening_range_low = 0
+    new_midnight_opening_range_high = 0
     
     opening_range_gap_start_3 = 0
     opening_range_gap_ce_3 = 0
@@ -63,12 +66,16 @@ class MultiTimeframeCandleManager:
     
         if(candle.t.hour == 0 and candle.t.minute == 0 and candle.t.second == 0):
             self.midnight_open  = candle.o
-            self.midnight_opening_range_low = candle.l
-            self.midnight_opening_range_high = candle.h
+            self.new_midnight_opening_range_low = candle.l
+            self.new_midnight_opening_range_high = candle.h
     
-        if(candle.t.hour == 0 and candle.t.minute <= 30):
-            self.midnight_opening_range_low = min(self.midnight_opening_range_low, candle.l)
-            self.midnight_opening_range_high = max(self.midnight_opening_range_high, candle.h)
+        if(candle.t.hour == 0 and candle.t.minute < 30):
+            self.new_midnight_opening_range_low = min(self.new_midnight_opening_range_low, candle.l)
+            self.new_midnight_opening_range_high = max(self.new_midnight_opening_range_high, candle.h)
+        
+        if(candle.t.hour == 0 and candle.t.minute == 30):
+            self.midnight_opening_range_low = self.new_midnight_opening_range_low
+            self.midnight_opening_range_high = self.new_midnight_opening_range_high
     
         
         if(candle.t.hour == 16 and candle.t.minute == 15 and candle.t.second == 0 and len(self.m1_candles)>1):
