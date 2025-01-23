@@ -2,49 +2,9 @@
 from collections import deque
 import copy
 from Candle import Candle
-
+from collections import deque
 
 class MultiTimeframeCandleManager:
-
-    index = 0
-    
-    current_candles = deque(maxlen = 30000)
-    
-    midnight_open = 0
-    midnight_opening_range_low = 0
-    midnight_opening_range_high = 0
-
-    new_midnight_opening_range_low = 0
-    new_midnight_opening_range_high = 0
-    
-    opening_range_gap_start_3 = 0
-    opening_range_gap_ce_3 = 0
-    opening_range_gap_end_3 = 0
-    
-    opening_range_gap_start_2 = 0
-    opening_range_gap_ce_2 = 0
-    opening_range_gap_end_2 = 0
-    
-    opening_range_gap_start_1 = 0
-    opening_range_gap_ce_1 = 0
-    opening_range_gap_end_1 = 0
-    
-    fp_start_3 = 0
-    fp_ce_3 = 0
-    fp_end_3 = 0
-    
-    fp_start_2 = 0
-    fp_ce_2 = 0
-    fp_end_2 = 0
-    
-    fp_start_1 = 0
-    fp_ce_1 = 0
-    fp_end_1 = 0
-        
-    last_settlement_price = 0
-
-    
-    hunt_fvg = False
     
     def __init__(self):
         l = 60
@@ -53,6 +13,54 @@ class MultiTimeframeCandleManager:
         self.m15_candles = deque(maxlen = l)
         self.m60_candles = deque(maxlen = 1000)  
         self.d1_candles = deque(maxlen = 1000)   
+
+
+        self.midnight_open = 0
+        self.midnight_opening_range_low = 0
+        self.midnight_opening_range_high = 0
+    
+        self.new_midnight_opening_range_low = 0
+        self.new_midnight_opening_range_high = 0
+    
+        self.opening_range_gaps = deque(maxlen = 3)
+        self.fps = deque(maxlen = 3)
+        
+        
+        self.london_highs_lows = deque(maxlen = 3)
+        self.current_lh = 0;
+        self.current_ll = 0;
+
+        self.asia_highs_lows = deque(maxlen = 3)
+        self.current_ah = 0;
+        self.current_al = 0;
+
+        self.ny_am_highs_lows = deque(maxlen = 3)
+        self.current_nah = 0;
+        self.current_nal = 0;
+
+        self.ny_lunch_highs_lows = deque(maxlen = 3)
+        self.current_nlh = 0;
+        self.current_nll = 0;
+
+        self.ny_pm_highs_lows = deque(maxlen = 3)
+        self.current_nph = 0;
+        self.current_npl = 0;
+
+        
+            
+        self.last_settlement_price = 0
+    
+        self.normal_pdas = deque(maxlen = 120)
+    
+        self.sod = 0
+        self.sod_open = 0
+        self.sod_max_b = 0
+        self.sod_max_w = 0
+        self.sod_min_b = 0
+        self.sod_min_w = 0
+        self.sod_s = 0
+    
+        self.hunt_fvg = False
 
     
 
@@ -64,7 +72,7 @@ class MultiTimeframeCandleManager:
 
         self.m1_candles.append(candle)
     
-        if(candle.t.hour == 0 and candle.t.minute == 0 and candle.t.second == 0):
+        if(candle.t.hour == 0 and candle.t.minute == 0):
             self.midnight_open  = candle.o
             self.new_midnight_opening_range_low = candle.l
             self.new_midnight_opening_range_high = candle.h
@@ -77,26 +85,14 @@ class MultiTimeframeCandleManager:
             self.midnight_opening_range_low = self.new_midnight_opening_range_low
             self.midnight_opening_range_high = self.new_midnight_opening_range_high
     
-        
-        if(candle.t.hour == 16 and candle.t.minute == 15 and candle.t.second == 0 and len(self.m1_candles)>1):
+        if(candle.t.hour == 16 and candle.t.minute == 15 and len(self.m1_candles)>1):
             last_candle = self.m1_candles[-2]
             self.last_settlement_price = last_candle.c
     
         if(candle.t.hour == 9 and candle.t.minute == 30 and candle.t.second == 0):
             opening_price = candle.o
-
             self.hunt_fvg = True
-            
-            self.opening_range_gap_start_3 = self.opening_range_gap_start_2
-            self.opening_range_gap_start_2 = self.opening_range_gap_start_1
-            self.opening_range_gap_end_3 = self.opening_range_gap_end_2
-            self.opening_range_gap_end_2 = self.opening_range_gap_end_1
-            self.opening_range_gap_ce_3 = self.opening_range_gap_ce_2
-            self.opening_range_gap_ce_2 = self.opening_range_gap_ce_1
-    
-            self.opening_range_gap_end_1 = opening_price
-            self.opening_range_gap_start_1 = self.last_settlement_price
-            self.opening_range_gap_ce_1 = (opening_price+self.last_settlement_price) / 2
+            self.opening_range_gaps.append([self.last_settlement_price, (opening_price+self.last_settlement_price) / 2, opening_price])
 
         if self.hunt_fvg and candle.t.hour == 9 and candle.t.minute >= 32:
             new_fvg = [0,0,0]
@@ -106,22 +102,164 @@ class MultiTimeframeCandleManager:
                 new_fvg = [self.m1_candles[-3].l, (self.m1_candles[-3].l+self.m1_candles[-1].h) / 2 ,self.m1_candles[-1].h]
 
             if(new_fvg[1] != 0):
-
                 self.hunt_fvg = False
+                self.fps.append(new_fvg)
                 
-                self.fp_start_3 = self.fp_start_2
-                self.fp_ce_3 = self.fp_ce_2
-                self.fp_end_3 = self.fp_end_2
-                
-                self.fp_start_2 = self.fp_start_1
-                self.fp_ce_2 = self.fp_ce_1
-                self.fp_end_2 = self.fp_end_1
+
+        if(candle.t.hour == 2 and candle.t.minute == 0):
+            self.current_lh = candle.h
+            self.current_ll = candle.l
+            
+        if(candle.t.hour >= 2 and candle.t.hour < 5):
+            self.current_lh = max(candle.h, self.current_lh)
+            self.current_ll = min(candle.l, self.current_ll)
         
-                self.fp_start_1 = new_fvg[0]
-                self.fp_ce_1 = new_fvg[1]
-                self.fp_end_1 = new_fvg[2]
+        if(candle.t.hour == 2 and candle.t.minute == 0):
+            self.london_highs_lows.append([self.current_lh, 0, self.current_ll, 0])
+
+        
+        if(candle.t.hour == 20 and candle.t.minute == 0):
+            self.current_h = candle.h
+            self.current_al = candle.l
+            
+        if(candle.t.hour >= 20):
+            self.current_ah = max(candle.h, self.current_ah)
+            self.current_al = min(candle.l, self.current_al)
+        
+        if(candle.t.hour == 0 and candle.t.minute == 0):
+            self.asia_highs_lows.append([self.current_ah, 0, self.current_al, 0])
+
+        
+        if(candle.t.hour == 7 and candle.t.minute == 0):
+            self.current_nah = candle.h
+            self.current_nal = candle.l
+            
+        if(candle.t.hour >= 7 and candle.t.hour < 11):
+            self.current_nah = max(candle.h, self.current_nah)
+            self.current_nal = min(candle.l, self.current_nal)
+        
+        if(candle.t.hour == 11 and candle.t.minute == 0):
+            self.ny_am_highs_lows.append([self.current_nah, 0, self.current_nal, 0])
+
+            
+        if(candle.t.hour == 11 and candle.t.minute == 0):
+            self.current_nlh = candle.h
+            self.current_nll = candle.l
+            
+        if(candle.t.hour >= 11 and candle.t.hour < 13):
+            self.current_nlh = max(candle.h, self.current_nlh)
+            self.current_nll = min(candle.l, self.current_nll)
+        
+        if(candle.t.hour == 13 and candle.t.minute == 0):
+            self.ny_lunch_highs_lows.append([self.current_nlh, 0, self.current_nll, 0])
+
+        
+        if(candle.t.hour == 13 and candle.t.minute == 0):
+            self.current_nph = candle.h
+            self.current_npl = candle.l
+            
+        if(candle.t.hour >= 13 and candle.t.hour < 16):
+            self.current_nph = max(candle.h, self.current_nph)
+            self.current_npl = min(candle.l, self.current_npl)
+        
+        if(candle.t.hour == 16 and candle.t.minute == 0):
+            self.ny_pm_highs_lows.append([self.current_nph, 0, self.current_npl, 0])
+
+            
+
+        for n in range(len(self.london_highs_lows)):
+            if candle.h > self.london_highs_lows[n][0]:
+                self.london_highs_lows[n][1] = 1
+            if candle.l < self.london_highs_lows[n][2]:
+                self.london_highs_lows[n][3] = 1
+        
+        
+        for n in range(len(self.asia_highs_lows)):
+            if candle.h > self.asia_highs_lows[n][0]:
+                self.asia_highs_lows[n][1] = 1
+            if candle.l < self.asia_highs_lows[n][2]:
+                self.asia_highs_lows[n][3] = 1
+
                 
+        for n in range(len(self.ny_am_highs_lows)):
+            if candle.h > self.ny_am_highs_lows[n][0]:
+                self.ny_am_highs_lows[n][1] = 1
+            if candle.l < self.ny_am_highs_lows[n][2]:
+                self.ny_am_highs_lows[n][3] = 1
+
                 
+        for n in range(len(self.ny_lunch_highs_lows)):
+            if candle.h > self.ny_lunch_highs_lows[n][0]:
+                self.ny_lunch_highs_lows[n][1] = 1
+            if candle.l < self.ny_lunch_highs_lows[n][2]:
+                self.ny_lunch_highs_lows[n][3] = 1
+
+                
+        for n in range(len(self.ny_pm_highs_lows)):
+            if candle.h > self.ny_pm_highs_lows[n][0]:
+                self.ny_pm_highs_lows[n][1] = 1
+            if candle.l < self.ny_pm_highs_lows[n][2]:
+                self.ny_pm_highs_lows[n][3] = 1
+
+
+        ##### other pd arrays
+        #def center(a,b):
+            #return (a+b) / 2
+        ### normal fvg
+        if(len(self.m1_candles) > 3):
+            if self.m1_candles[-1].l > self.m1_candles[-3].h:
+                fvg = [self.m1_candles[-3].h, self.m1_candles[-1].l, 0]
+                self.normal_pdas.append(fvg)
+                
+            if self.m1_candles[-1].h < self.m1_candles[-3].l:
+                fvg = [self.m1_candles[-1].h, self.m1_candles[-3].l, 0]
+                self.normal_pdas.append(fvg)
+
+        ### normal ob
+        if self.m1_candles[-1].c < self.m1_candles[-1].o:
+            if self.sod == -1:
+                self.sod_max_b = max(self.sod_max_b, self.m1_candles[-1].o)
+                self.sod_max_w =  max(self.sod_max_w, self.m1_candles[-1].h)
+                self.sod_min_b = min(self.sod_min_b, self.m1_candles[-1].c)
+                self.sod_min_w =  max(self.sod_min_w, self.m1_candles[-1].l)
+                self.sod_s += 1
+            if self.sod == 1:
+                ob = [self.sod_min_w, self.sod_max_w, 0]
+                self.normal_pdas.append(ob)
+
+            if self.sod != -1:
+                self.sod = -1
+                self.sod_max_b = self.m1_candles[-1].o
+                self.sod_max_w =  self.m1_candles[-1].h
+                self.sod_min_b = self.m1_candles[-1].c
+                self.sod_min_w =  self.m1_candles[-1].l
+                self.sod_s = 1
+                
+        if self.m1_candles[-1].c > self.m1_candles[-1].o:
+            if self.sod == 1:
+                self.sod_max_b = max(self.sod_max_b, self.m1_candles[-1].c)
+                self.sod_max_w =  max(self.sod_max_w, self.m1_candles[-1].h)
+                self.sod_min_b = min(self.sod_min_b, self.m1_candles[-1].o)
+                self.sod_min_w =  max(self.sod_min_w, self.m1_candles[-1].l)
+                self.sod_s += 1
+            if self.sod == -1:
+                ob = [self.sod_min_w, self.sod_max_w, 0]
+                self.normal_pdas.append(ob)
+
+            if self.sod != 1:
+                self.sod = 1
+                self.sod_max_b = self.m1_candles[-1].c
+                self.sod_max_w =  self.m1_candles[-1].h
+                self.sod_min_b = self.m1_candles[-1].o
+                self.sod_min_w =  self.m1_candles[-1].l
+                self.sod_s = 1
+        #####
+        for n in range(len(self.normal_pdas)):
+            self.normal_pdas[n][2]+=1
+
+        
+        while len(self.normal_pdas) > 0 and self.normal_pdas[0][2] > 10:
+                del self.normal_pdas[0]
     
 
         # m5 candles
@@ -199,31 +337,29 @@ class MultiTimeframeCandleManager:
 
 
         pdas = [
-            self.opening_range_gap_start_3,
-            self.opening_range_gap_ce_3,
-            self.opening_range_gap_end_3,
-    
-            self.opening_range_gap_start_2,
-            self.opening_range_gap_ce_2,
-            self.opening_range_gap_end_2,
-    
-            self.opening_range_gap_start_1,
-            self.opening_range_gap_ce_1,
-            self.opening_range_gap_end_1,
-
-            
-            self.fp_start_3,
-            self.fp_ce_3,
-            self.fp_end_3,
-
-            self.fp_start_2,
-            self.fp_ce_2,
-            self.fp_end_2,
-
-            self.fp_start_1,
-            self.fp_ce_1,
-            self.fp_end_1,
+           
             ]
+        for g in self.opening_range_gaps:
+            pdas.extend(g)
+        for g in self.fps:
+            pdas.extend(g)
+
+        for hl in self.asia_highs_lows:
+            #print("a:", hl)
+            pdas.extend(hl)
+        for hl in self.london_highs_lows:
+            pdas.extend(hl)
+            #print("l:", hl)
+        for hl in self.ny_am_highs_lows:
+            pdas.extend(hl)
+            #print("na:", hl)
+        for hl in self.ny_lunch_highs_lows:
+            pdas.extend(hl)
+            #print("nl:", hl)
+        for hl in self.ny_pm_highs_lows:
+            pdas.extend(hl)
+            #print("np:", hl)
+            
 
         ret_candles =       [
                 self.m15_candles,
