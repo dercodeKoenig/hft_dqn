@@ -258,7 +258,7 @@ class MultiTimeframeCandleManager:
             self.normal_pdas[n][2]+=1
 
         
-        while len(self.normal_pdas) > 0 and self.normal_pdas[0][2] > 10:
+        while len(self.normal_pdas) > 0 and self.normal_pdas[0][2] > 20:
                 del self.normal_pdas[0]
     
 
