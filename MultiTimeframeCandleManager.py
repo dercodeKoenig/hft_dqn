@@ -23,6 +23,7 @@ class MultiTimeframeCandleManager:
         self.new_midnight_opening_range_high = 0
     
         self.opening_range_gaps = deque(maxlen = 3)
+        self.ndogs = deque(maxlen = 5)
         self.fps = deque(maxlen = 3)
         
         
@@ -326,6 +327,13 @@ class MultiTimeframeCandleManager:
                 
                 c = Candle(candle.o,candle.h,candle.l,candle.c,candle.t)
                 self.d1_candles.append(c)
+
+                last_close = self.m1_candles[-2].c
+                new_open = candle.o
+                ce = (new_open+last_close) / 2
+                self.ndogs.append([last_close, ce, new_open])
+                
+                
             else:
                 self.d1_candles[-1].c = candle.c
                 self.d1_candles[-1].h = max(candle.h, self.d1_candles[-1].h)
@@ -342,6 +350,8 @@ class MultiTimeframeCandleManager:
         for g in self.opening_range_gaps:
             pdas.extend(g)
         for g in self.fps:
+            pdas.extend(g)
+        for g in self.ndogs:
             pdas.extend(g)
 
         for hl in self.asia_highs_lows:
