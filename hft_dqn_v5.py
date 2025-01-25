@@ -15,19 +15,6 @@ from save_and_load import *
 from Candle import Candle
 import matplotlib.pyplot as plt
 
-
-try:
-    cluster_resolver = tf.distribute.cluster_resolver.TPUClusterResolver(tpu="local")
-    tf.config.experimental_connect_to_cluster(cluster_resolver)
-    tf.tpu.experimental.initialize_tpu_system(cluster_resolver)
-    strategy = tf.distribute.TPUStrategy(cluster_resolver)
-    print("use tpu strategy")
-except:
-    strategy = tf.distribute.MirroredStrategy()
-strategy
-
-
-
 gamma = 0.995
 memory_len = 2000000
 sarts_memory = deque(maxlen = memory_len)
@@ -47,80 +34,88 @@ m1 = np.eye(num_actions, dtype="float32")
 num_model_inputs = 6
 
 
-with strategy.scope():
+def make_model():
+    lrelu = tf.keras.layers.LeakyReLU(0.05)
 
-  lrelu = tf.keras.layers.LeakyReLU(0.05)
+    chart_m15 = tf.keras.layers.Input(shape=(60, 4))
+    chart_m5 = tf.keras.layers.Input(shape=(60, 4))
+    chart_m1 = tf.keras.layers.Input(shape=(60, 4))
+
+    pdas = tf.keras.layers.Input(shape=(3 * 3 + 3 * 3 + 1 + 12 * 5 + 5 * 3,))
+
+    current_position = tf.keras.layers.Input(shape=(3,))
+
+    minutes = tf.keras.layers.Input(shape=(1,))
+    minutes_embed = tf.keras.layers.Embedding(input_dim=60 * 24, output_dim=8)(minutes)
+    minutes_embed_flat = tf.keras.layers.Flatten()(minutes_embed)
+
+    f15 = tf.keras.layers.Flatten()(chart_m15)
+    f5 = tf.keras.layers.Flatten()(chart_m5)
+    f1 = tf.keras.layers.Flatten()(chart_m1)
+
+    pdas_repeated = tf.keras.layers.Lambda(
+        lambda inputs: tf.repeat(tf.expand_dims(inputs, axis=1), repeats=60, axis=1)
+    )(pdas)
+
+    concatenated_m5_at = tf.keras.layers.Concatenate(axis=-1)([chart_m5, pdas_repeated])
+    m5_at = tf.keras.layers.Dense(128)(concatenated_m5_at)
+    m5_at = lrelu(m5_at)
+    m5_at = tf.keras.layers.Dense(128)(m5_at)
+    m5_at = lrelu(m5_at)
+    m5_at = tf.keras.layers.Dense(32)(m5_at)
+    m5_at = lrelu(m5_at)
+    m5_rnn = tf.keras.layers.GRU(32)(m5_at)
+
+    concatenated_m1_at = tf.keras.layers.Concatenate(axis=-1)([chart_m1, pdas_repeated])
+    m1_at = tf.keras.layers.Dense(128)(concatenated_m1_at)
+    m1_at = lrelu(m1_at)
+    m1_at = tf.keras.layers.Dense(128)(m1_at)
+    m1_at = lrelu(m1_at)
+    m1_at = tf.keras.layers.Dense(32)(m1_at)
+    m1_at = lrelu(m1_at)
+    m1_rnn = tf.keras.layers.GRU(32)(m1_at)
+
+    # c = tf.keras.layers.Concatenate()([f15, f5, f1, pdas, minutes_embed_flat, current_position, scaled_open_profit])
+    c = tf.keras.layers.Concatenate()([f15, f5, f1, pdas, minutes_embed_flat, current_position, m1_rnn, m5_rnn])
+
+    d = tf.keras.layers.Dense(1024 * 1)(c)
+    d = lrelu(d)
+    d = tf.keras.layers.Dense(1024 * 1)(d)
+    d = lrelu(d)
+    d = tf.keras.layers.Dense(1024 * 1)(d)
+    d = lrelu(d)
+
+    value = tf.keras.layers.Dense(1, activation="linear")(d)
+    advantage = tf.keras.layers.Dense(num_actions, activation="linear")(d)
+
+    q_values = tf.keras.layers.Lambda(
+        lambda inputs: inputs[0] + (inputs[1] - tf.reduce_mean(inputs[1], axis=1, keepdims=True))
+    )([value, advantage])
+
+    outputs = tf.keras.layers.Activation('linear', dtype='float32')(q_values)
+
+    model = tf.keras.Model(inputs=[chart_m15, chart_m5, chart_m1, pdas, minutes, current_position], outputs=outputs)
+    return model
+
+if __name__ == "__main__":
+    try:
+        cluster_resolver = tf.distribute.cluster_resolver.TPUClusterResolver(tpu="local")
+        tf.config.experimental_connect_to_cluster(cluster_resolver)
+        tf.tpu.experimental.initialize_tpu_system(cluster_resolver)
+        strategy = tf.distribute.TPUStrategy(cluster_resolver)
+        print("use tpu strategy")
+    except:
+        strategy = tf.distribute.MirroredStrategy()
 
 
-  chart_m15 = tf.keras.layers.Input(shape = (60,4))
-  chart_m5 = tf.keras.layers.Input(shape = (60,4))
-  chart_m1 = tf.keras.layers.Input(shape = (60,4))
-
-  pdas = tf.keras.layers.Input(shape = (3*3+3*3+1+12*5+5*3,))
-
-  current_position = tf.keras.layers.Input(shape = (3,))
-
-  minutes = tf.keras.layers.Input(shape = (1,))
-  minutes_embed = tf.keras.layers.Embedding(input_dim=60*24, output_dim=8)(minutes)
-  minutes_embed_flat = tf.keras.layers.Flatten()(minutes_embed)
-
-  f15 = tf.keras.layers.Flatten()(chart_m15)
-  f5 = tf.keras.layers.Flatten()(chart_m5)
-  f1 = tf.keras.layers.Flatten()(chart_m1)
-
-  pdas_repeated = tf.keras.layers.Lambda(
-  lambda inputs: tf.repeat(tf.expand_dims(inputs, axis = 1), repeats=60, axis=1)
-  )(pdas)
-
-  concatenated_m5_at = tf.keras.layers.Concatenate(axis=-1)([chart_m5, pdas_repeated])
-  m5_at = tf.keras.layers.Dense(128)(concatenated_m5_at)
-  m5_at = lrelu(m5_at)
-  m5_at = tf.keras.layers.Dense(128)(m5_at)
-  m5_at = lrelu(m5_at)
-  m5_at = tf.keras.layers.Dense(32)(m5_at)
-  m5_at = lrelu(m5_at)
-  m5_rnn = tf.keras.layers.GRU(32)(m5_at)
-
-  concatenated_m1_at = tf.keras.layers.Concatenate(axis=-1)([chart_m1, pdas_repeated])
-  m1_at = tf.keras.layers.Dense(128)(concatenated_m1_at)
-  m1_at = lrelu(m1_at)
-  m1_at = tf.keras.layers.Dense(128)(m1_at)
-  m1_at = lrelu(m1_at)
-  m1_at = tf.keras.layers.Dense(32)(m1_at)
-  m1_at = lrelu(m1_at)
-  m1_rnn = tf.keras.layers.GRU(32)(m1_at)
-
-  #c = tf.keras.layers.Concatenate()([f15, f5, f1, pdas, minutes_embed_flat, current_position, scaled_open_profit])
-  c = tf.keras.layers.Concatenate()([f15, f5, f1, pdas, minutes_embed_flat, current_position, m1_rnn, m5_rnn])
-
-  d = tf.keras.layers.Dense(1024*1)(c)
-  d = lrelu(d)
-  d = tf.keras.layers.Dense(1024*1)(d)
-  d = lrelu(d)
-  d = tf.keras.layers.Dense(1024*1)(d)
-  d = lrelu(d)
-
-
-  value = tf.keras.layers.Dense(1, activation="linear")(d)
-  advantage = tf.keras.layers.Dense(num_actions, activation="linear")(d)
-
-  q_values = tf.keras.layers.Lambda(
-  lambda inputs: inputs[0] + (inputs[1] - tf.reduce_mean(inputs[1], axis=1, keepdims=True))
-  )([value, advantage])
-
-  outputs = tf.keras.layers.Activation('linear', dtype='float32')(q_values)
-
-  model = tf.keras.Model(inputs = [chart_m15, chart_m5, chart_m1, pdas, minutes, current_position], outputs = outputs)
-  target_model = tf.keras.Model(inputs = [chart_m15, chart_m5, chart_m1, pdas, minutes, current_position], outputs = outputs)
-
-
-  optimizer = tf.keras.optimizers.Adam(learning_rate = 0.000001)
-
-
-
-#model.summary()
-
-
+    with strategy.scope():
+        model = make_model()
+        target_model = make_model()
+        optimizer = tf.keras.optimizers.Adam(learning_rate = 0.000001)
+else:
+    print("make model...")
+    model = make_model()
+    print("model made!")
 
 
 
@@ -417,6 +412,7 @@ def step():
 from multiprocessing import Queue, Process
 
 def get_next_sarts(output_q, model_weights_q):
+  print("process start")
   reset()
   while True:
     if(model_weights_q.qsize() > 0):
@@ -429,7 +425,6 @@ def get_next_sarts(output_q, model_weights_q):
       output_q.put(r)
     else:
       time.sleep(0.1)
-      break
 
 
 model_qs = []
@@ -442,8 +437,9 @@ def update_weights():
 def get_sarts():
     sarts = []
     for i in sarts_qs:
-        if(i.qsize() > 0):
-            sarts.append(i.get())
+        if i.qsize() > 0:
+            p = i.get()
+            sarts.append(p)
     return sarts
 
 @tf.function(jit_compile=True)
@@ -504,13 +500,21 @@ def run():
         time.sleep(10)
         print("waiting for sarts data... - memory size:", len(sarts_memory))
         for _ in range(min_memory_size):
-            sarts_memory.extend(get_sarts())
+            p = get_sarts()
+            if(len(p) > 0):
+                sarts_memory.extend(p)
+            else:
+                break
 
 
     distributed_data = (strategy.experimental_distribute_values_from_function(get_data))
     loss, q = strategy.reduce(tf.distribute.ReduceOp.MEAN, strategy.run(tstep, args=(distributed_data,)), axis=None)
 
-    last_rewards_mean = [i[2] for i in sarts_memory[-2:]]
+
+    last_rewards = []
+    for i in range(len(sarts_memory)-2, len(sarts_memory)):
+        last_rewards.append(sarts_memory[i][2])
+    last_rewards_mean = np.mean(last_rewards)
 
     return loss, q, last_rewards_mean
 
@@ -523,6 +527,7 @@ if __name__ == "__main__":
         x2 = Queue()
 
         x = Process(target=get_next_sarts, args=(x1, x2))
+        x.daemon = True
         x.start()
 
         sarts_qs.append(x1)
@@ -560,7 +565,7 @@ if __name__ == "__main__":
             rewards_tmp = []
             progbar = tf.keras.utils.Progbar(ep_len)
             for i in range(ep_len):
-                c_loss, c_q, c_rewards, c_action = run()
+                c_loss, c_q, c_rewards = run()
                 loss.append(c_loss)
                 q.append(c_q)
                 rewards_tmp.append(c_rewards)
@@ -583,4 +588,6 @@ if __name__ == "__main__":
         except    KeyboardInterrupt:
             print("")
             print("exit")
+            import sys
+            sys.exit()
             break
