@@ -64,9 +64,9 @@ strategy
 
 
 gamma = 0.995
-memory_len = 2000000
+memory_len = 6000000
 sarts_memory = deque(maxlen = memory_len)
-batch_size = 1024
+batch_size = 512
 e = 2
 slm = 1.5
 
@@ -76,7 +76,7 @@ num_actions = 3
 
 path = "./"
 
-ep_len = 50000
+ep_len = 10000
 
 m1 = np.eye(num_actions, dtype="float32")
 num_model_inputs = 6
@@ -254,7 +254,7 @@ inputs = [
 candles = []
 cmm = 0
 
-input_index = 1
+input_index = 0
 def reset():
     global index, last_state, last_action, current_position, current_order, equity, m, candles, cmm, input_index
 
@@ -374,7 +374,7 @@ def step():
                 sarts = last_state, last_action, reward, terminal, state
 
 
-            if(random.randint(0,100) > e):
+            if(random.randint(0,100) >= e):
                 #with tf.device("/TPU:0"):
                 output = inference_step(
                         tf.expand_dims(m15_np, 0),
@@ -478,6 +478,7 @@ def step():
     return sarts
 
 reset()
+index = 1000000
 
 
 # def plot_candles(candles):
