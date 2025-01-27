@@ -64,9 +64,9 @@ strategy
 
 
 gamma = 0.995
-memory_len = 6000000
+memory_len = 1400000
 sarts_memory = deque(maxlen = memory_len)
-batch_size = 256
+batch_size = 32
 e = 2
 slm = 1.5
 
@@ -254,7 +254,7 @@ inputs = [
 candles = []
 cmm = 0
 
-input_index = 1
+input_index = 2
 def reset():
     global index, last_state, last_action, current_position, current_order, equity, m, candles, cmm, input_index
 
@@ -614,7 +614,7 @@ def save():
 # In[16]:
 
 
-save_eps = 5
+save_eps = 20
 eps_c = 0
 
 while True:
