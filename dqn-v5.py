@@ -66,7 +66,7 @@ strategy
 gamma = 0.995
 memory_len = 6000000
 sarts_memory = deque(maxlen = memory_len)
-batch_size = 512
+batch_size = 256
 e = 2
 slm = 1.5
 
@@ -76,7 +76,7 @@ num_actions = 3
 
 path = "./"
 
-ep_len = 10000
+ep_len = 5000
 
 m1 = np.eye(num_actions, dtype="float32")
 num_model_inputs = 6
@@ -254,7 +254,7 @@ inputs = [
 candles = []
 cmm = 0
 
-input_index = 0
+input_index = 1
 def reset():
     global index, last_state, last_action, current_position, current_order, equity, m, candles, cmm, input_index
 
@@ -614,7 +614,7 @@ def save():
 # In[16]:
 
 
-save_eps = 2
+save_eps = 5
 eps_c = 0
 
 while True:
