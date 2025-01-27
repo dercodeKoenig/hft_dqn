@@ -64,7 +64,7 @@ strategy
 
 
 gamma = 0.995
-memory_len = 1400000
+memory_len = 1500000
 sarts_memory = deque(maxlen = memory_len)
 batch_size = 32
 e = 2
@@ -254,7 +254,7 @@ inputs = [
 candles = []
 cmm = 0
 
-input_index = 2
+input_index = 0
 def reset():
     global index, last_state, last_action, current_position, current_order, equity, m, candles, cmm, input_index
 
@@ -478,7 +478,7 @@ def step():
     return sarts
 
 reset()
-index = 1000000
+#index = 1000000
 
 
 # def plot_candles(candles):
