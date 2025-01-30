@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
 
 import time
 start_time = time.time()
@@ -42,10 +37,10 @@ strategy
 gamma = 0.99
 memory_len = 6000000
 sarts_memory = deque(maxlen = memory_len)
-batch_size = 256
+batch_size = 512
 e = 2
 slm = 1.5
-
+steps_before_learn = 16
 min_memory_size = 100000
 
 num_actions = 3
@@ -223,9 +218,9 @@ equity = 0
 equity_L = [0]
 
 inputs = [
-    ("NQ_2", 0.75),
-    ("ES_2", 0.5),
-    ("YM_2", 1.5),
+    ("NQ_2", 0.5),
+    ("ES_2", 0.3),
+    ("YM_2", 0.75),
     #("EURUSD_2", 0.00015),
     #("GBPUSD_2", 0.00015)
 ]
@@ -529,8 +524,9 @@ def get_data(n):
         return states_array, masks, rewards, terminals, next_states_array
 
 def run():
-    sarts = step()
-    sarts_memory.append(sarts)
+    for _ in range(steps_before_learn):
+        sarts = step()
+        sarts_memory.append(sarts)
 
     if(len(sarts_memory) > min_memory_size):
 
