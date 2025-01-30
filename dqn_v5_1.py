@@ -523,10 +523,15 @@ def get_data(n):
 
         return states_array, masks, rewards, terminals, next_states_array
 
+
 def run():
+    actions = []
+    rewards = []
     for _ in range(steps_before_learn):
         sarts = step()
         sarts_memory.append(sarts)
+        rewards.append(sarts[2])
+        actions.append(sarts[1])
 
     if(len(sarts_memory) > min_memory_size):
 
@@ -536,7 +541,7 @@ def run():
         return loss, q, sarts[2], sarts[1]
 
     else :
-        return 0,0, sarts[2], sarts[1]
+        return 0,0, np.mean(rewards) , np.mean(actions)
 
 
 # In[15]:
