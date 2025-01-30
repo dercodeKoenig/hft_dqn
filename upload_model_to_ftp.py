@@ -6,7 +6,8 @@ ftp_server = 'benundmarvpromotions.lima-ftp.de'
 ftp_user = 'benundmarvpromotions'
 ftp_password = 'gWEhrtjanrgy'
 
-file_to_upload = "model.weights.h5"
+model_save_name = "model.weights.h5"
+file_to_upload = model_save_name
 remote_path = '/test/' + model_save_name
 
 # Connect to the FTP server
