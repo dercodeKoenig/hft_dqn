@@ -578,7 +578,7 @@ eps_c = 0
 
 while True:
     try:
-        #eps_c += 1
+        eps_c += 1
         loss = []
         q = []
         rewards_tmp = []
