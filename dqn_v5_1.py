@@ -52,7 +52,7 @@ num_actions = 3
 
 path = "./"
 
-ep_len = 2000
+ep_len = 1000
 
 m1 = np.eye(num_actions, dtype="float32")
 num_model_inputs = 6
@@ -100,18 +100,18 @@ with strategy.scope():
   )(pdas)
 
   concatenated_m5_at = tf.keras.layers.Concatenate(axis=-1)([chart_m5, pdas_repeated])
-  m5_at = tf.keras.layers.Dense(1024)(concatenated_m5_at)
+  m5_at = tf.keras.layers.Dense(512)(concatenated_m5_at)
   m5_at = lrelu(m5_at)
-  m5_at = tf.keras.layers.Dense(1024)(m5_at)
+  m5_at = tf.keras.layers.Dense(256)(m5_at)
   m5_at = lrelu(m5_at)
   m5_at = tf.keras.layers.Dense(128)(m5_at)
   m5_at = lrelu(m5_at)
   m5_at = tf.keras.layers.LSTM(512)(m5_at)
 
   concatenated_m1_at = tf.keras.layers.Concatenate(axis=-1)([chart_m1, pdas_repeated])
-  m1_at = tf.keras.layers.Dense(1024)(concatenated_m1_at)
+  m1_at = tf.keras.layers.Dense(512)(concatenated_m1_at)
   m1_at = lrelu(m1_at)
-  m1_at = tf.keras.layers.Dense(1024)(m1_at)
+  m1_at = tf.keras.layers.Dense(256)(m1_at)
   m1_at = lrelu(m1_at)
   m1_at = tf.keras.layers.Dense(128)(m1_at)
   m1_at = lrelu(m1_at)
@@ -591,14 +591,14 @@ while True:
             rewards_tmp.append(c_rewards)
             actions.append(c_action)
 
-            #progbar.update(i+1, values = [("loss", c_loss), ("qv", c_q), ("reward", c_rewards), ("avg_action", c_action)])
+            progbar.update(i+1, values = [("loss", c_loss), ("qv", c_q), ("reward", c_rewards), ("avg_action", c_action)])
 
         loss_mean.append(np.mean(loss))
         q_mean.append(np.mean(q))
         #rewards.append(np.mean(rewards_tmp))
         rewards.extend(rewards_tmp)
 
-        progbar.update(ep_len, values = [("loss", np.mean(loss)), ("qv", np.mean(q)), ("reward", np.mean(rewards_tmp)), ("avg_action", np.mean(actions))])
+        #progbar.update(ep_len, values = [("loss", np.mean(loss)), ("qv", np.mean(q)), ("reward", np.mean(rewards_tmp)), ("avg_action", np.mean(actions))])
 
         target_model.set_weights(model.get_weights())
 
