@@ -1,3 +1,6 @@
+from ftplib import *
+
+
 # FTP server details
 ftp_server = 'benundmarvpromotions.lima-ftp.de'
 ftp_user = 'benundmarvpromotions'
