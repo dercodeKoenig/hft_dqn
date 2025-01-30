@@ -591,14 +591,14 @@ while True:
             rewards_tmp.append(c_rewards)
             actions.append(c_action)
 
-            progbar.update(i+1, values = [("loss", c_loss), ("qv", c_q), ("reward", c_rewards), ("avg_action", c_action)])
+            #progbar.update(i+1, values = [("loss", c_loss), ("qv", c_q), ("reward", c_rewards), ("avg_action", c_action)])
 
         loss_mean.append(np.mean(loss))
         q_mean.append(np.mean(q))
         #rewards.append(np.mean(rewards_tmp))
         rewards.extend(rewards_tmp)
 
-        #progbar.update(ep_len, values = [("loss", np.mean(loss)), ("qv", np.mean(q)), ("reward", np.mean(rewards_tmp)), ("avg_action", np.mean(actions))])
+        progbar.update(ep_len, values = [("loss", np.mean(loss)), ("qv", np.mean(q)), ("reward", np.mean(rewards_tmp)), ("avg_action", np.mean(actions))])
 
         target_model.set_weights(model.get_weights())
 
