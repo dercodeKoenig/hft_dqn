@@ -275,7 +275,7 @@ class environment:
         self.equity = 0
         self.equity_L = [0]
         
-        print("env reset, using data:", ob, "-",self.index)
+        print("env reset, using data:", self.input_index, "-",self.index)
     
         return self.step(2)
     
