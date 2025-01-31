@@ -40,14 +40,14 @@ strategy
 # In[7]:
 
 gamma = 0.99
-memory_len = 6000000
+memory_len = 100000
 sarts_memory = deque(maxlen = memory_len)
 batch_size = 1024
 e = 2
 slm = 1.5
 steps_before_learn = 1
-num_envs = 64
-min_memory_size = 100000
+num_envs = 1024
+min_memory_size = 50000
 
 ep_len = 1000
 save_eps = 20
