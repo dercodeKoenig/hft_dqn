@@ -504,12 +504,12 @@ def step_all_envs():
         l_current_minutes.append(current_minutes)
         l_pos_info.append(pos_info)
     
-    l_m15_np = np.array(l_m15_np)
-    l_m5_np = np.array(l_m5_np)
-    l_m1_np = np.array(l_m1_np)
-    l_pda_np = np.array(l_pda_np)
-    l_current_minutes = np.array(l_current_minutes)
-    l_pos_info = np.array(l_pos_info)
+    l_m15_np = np.array(l_m15_np, dtype="float32")
+    l_m5_np = np.array(l_m5_np, dtype="float32")
+    l_m1_np = np.array(l_m1_np, dtype="float32")
+    l_pda_np = np.array(l_pda_np, dtype="float32")
+    l_current_minutes = np.array(l_current_minutes, dtype="float32")
+    l_pos_info = np.array(l_pos_info, dtype="float32")
 
     results = inference_step(
         l_m15_np,
