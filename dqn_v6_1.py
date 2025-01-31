@@ -458,7 +458,7 @@ class environment:
                 diff = (self.equity+self.open_profit) - self.equity_L[-1]
                 self.equity_L.append(self.equity+self.open_profit)
                 reward =  (diff) / r
-                reward = min(max(reward, -10), 10)
+                reward = min(max(reward, -5), 5)
                 terminal = 0
                 if(self.index+1 == len(self.candles)):
                     terminal = 1
