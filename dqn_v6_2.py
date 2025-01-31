@@ -511,14 +511,15 @@ def step_all_envs():
     l_current_minutes = np.array(l_current_minutes)
     l_pos_info = np.array(l_pos_info)
 
-    results = inference_step(
-        l_m15_np,
-        l_m5_np,
-        l_m1_np,
-        l_pda_np,
-        l_current_minutes,
-        l_pos_info
-    )
+    with tf.device("/TPU:0"):
+        results = inference_step(
+            l_m15_np,
+            l_m5_np,
+            l_m1_np,
+            l_pda_np,
+            l_current_minutes,
+            l_pos_info
+        )
 
     sarts_list = []
     for i in range(len(envs)):
