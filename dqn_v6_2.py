@@ -652,6 +652,9 @@ def save():
 
 eps_c = 0
 
+with open('running', 'w') as file:
+    pass
+
 while True:
     try:
         eps_c += 1
@@ -678,8 +681,9 @@ while True:
 
         target_model.set_weights(model.get_weights())
 
-
-        
+        if(!os.path.exists("running")):
+            break
+            
         if(eps_c >=save_eps):
           eps_c=0
           save()
