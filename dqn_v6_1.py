@@ -232,10 +232,9 @@ class Position:
 
 
 inputs = [
-    #("NQ_1", 0.5),
-    ("NQ_2", 0.5),
-    ("ES_2", 0.3),
-    ("YM_2", 0.75),
+    (obj_load("NQ_2"), 0.5),
+    (obj_load("ES_2"), 0.3),
+    (obj_load("YM_2"), 0.75),
     #("EURUSD_2", 0.00015),
     #("GBPUSD_2", 0.00015)
 ]
@@ -250,10 +249,8 @@ class environment:
         if(first):
             self.input_index = random.randint(0,len(inputs)-1)
         
-        #ob = inputs[self.input_index]
-        ob = inputs[0]
-        data = obj_load(ob[0])
-        self.candles = data
+        ob = inputs[self.input_index]
+        self.candles = ob[0]
         self.cmm = ob[1]
 
         self.input_index+=1
