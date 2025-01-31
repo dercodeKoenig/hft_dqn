@@ -682,7 +682,7 @@ while True:
 
         target_model.set_weights(model.get_weights())
 
-        if(!os.path.exists("running")):
+        if not os.path.exists("running"):
             break
         
         if(eps_c >=save_eps):
