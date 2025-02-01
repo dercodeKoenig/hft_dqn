@@ -89,12 +89,16 @@ def truncate_after_n_newlines(text, n):
 
 
 while True:
-    
-    connection = pymysql.connect(host=DB_HOST, user=DB_USER, password=DB_PASS, database=DB_NAME)
-    cursor = connection.cursor()
-    cursor.execute("SELECT * FROM `requests` WHERE output_path=''")
-    data = [x for x in cursor.fetchall()]
-    connection.close()
+    try:
+        connection = pymysql.connect(host=DB_HOST, user=DB_USER, password=DB_PASS, database=DB_NAME)
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM `requests` WHERE output_path=''")
+        data = [x for x in cursor.fetchall()]
+        connection.close()
+    except Exception as e:
+        print(e)
+        time.sleep(1)
+        continue
     
     if(len(data) == 0):
         if(pwr == 1):
