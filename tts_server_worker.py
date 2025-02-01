@@ -35,6 +35,8 @@ voices = [
     "af_sky",
     "bf_emma",
     "bm_george",
+    "af_heart",
+    "bf_lily"
 ]
 
 
@@ -123,6 +125,7 @@ while True:
             voice = "bf_isabella"
             if data[5] in voices:
                 voice = data[5]
+                print("use voice:", voice)
     
             speed = data[6]
             speed = min(4,max(0.25,speed))
