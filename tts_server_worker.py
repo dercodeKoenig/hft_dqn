@@ -81,6 +81,13 @@ def process(text, lang = "a", voice = "bf_isabella", speed = 1.1):
 
 pwr = 0
 
+def truncate_after_n_newlines(text, n):
+    parts = text.split("\n")  # Split by newlines
+    if len(parts) > n:
+        return "\n".join(parts[:n])  # Join only the first n parts
+    return text  # Return original text if it has fewer than n newlines
+
+
 while True:
     
     connection = pymysql.connect(host=DB_HOST, user=DB_USER, password=DB_PASS, database=DB_NAME)
@@ -103,25 +110,25 @@ while True:
             user_text_total = {}
             
             for i in data:
-                if i[0] not in user_text_total:
-                    user_text_total[i[0]] = 0
+                if i[7] not in user_text_total:
+                    user_text_total[i[7]] = 0
             
                 tlen = len(i[2])
-                user_text_total[i[0]] += tlen
+                user_text_total[i[7]] += tlen
             
             next_id_to_process = sorted(user_text_total.items(), key=lambda item: item[1])[0][0]
             #print("")
             #print(user_text_total)
             #print("")
             for i in data:
-                if i[0] == next_id_to_process:
+                if i[7] == next_id_to_process:
                     data = i
                     break
                     
-            print(data)
+            print(data, len(data[2]))
     
-            text = data[2]
-    
+            text = truncate_after_n_newlines(data[2], 50)
+            
             voice = "bf_isabella"
             if data[5] in voices:
                 voice = data[5]
