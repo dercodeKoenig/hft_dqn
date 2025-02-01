@@ -67,8 +67,8 @@ def process(text, lang = "a", voice = "bf_isabella", speed = 1.1):
     
     for i, (gs, ps, audio) in enumerate(generator):
         #print(i)  # Index
-        #print(gs) # Text
-        #print(ps) # Phonemes
+        print(gs) # Text
+        print(ps) # Phonemes
         all_audio.append(audio)  # Collect audio segments
     
     # Concatenate all audio segments into one
@@ -98,7 +98,24 @@ while True:
             pwr = 1
         
         try:
-            data = data[0]
+            user_text_total = {}
+            
+            for i in data:
+                if i[0] not in user_text_total:
+                    user_text_total[i[0]] = 0
+            
+                tlen = len(i[2])
+                user_text_total[i[0]] += tlen
+            
+            next_id_to_process = sorted(user_text_total.items(), key=lambda item: item[1])[0][0]
+            #print("")
+            #print(user_text_total)
+            #print("")
+            for i in data:
+                if i[0] == next_id_to_process:
+                    data = i
+                    break
+                    
             print(data)
     
             text = data[2]
