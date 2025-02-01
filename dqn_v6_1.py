@@ -276,6 +276,8 @@ class environment:
 
         self.equity = 0
         self.equity_L = [0]
+
+        self.sarts = None
         
         print("env reset, using data:", self.input_index, "-",self.index)
     
