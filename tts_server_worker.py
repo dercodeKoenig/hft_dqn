@@ -24,20 +24,19 @@ DB_PASS = "Sonne-12345"
 DB_NAME = "db_433859_6"
 
 
-voices = [
-    "af_bella",
-    "bf_isabella",
-    "bm_lewis",
-    "am_adam",
-    "am_michael",
-    "af_nicole",
-    "af_sarah",
-    "af_sky",
-    "bf_emma",
-    "bm_george",
-    "af_heart",
-    "bf_lily"
-]
+lang_voice_dict = {
+    "af_heart": "a", "af_alloy": "a", "af_aoede": "a", "af_bella": "a", "af_jessica": "a", "af_kore": "a", "af_nicole": "a", "af_nova": "a", "af_river": "a", "af_sarah": "a", "af_sky": "a",
+    "am_adam": "a", "am_echo": "a", "am_eric": "a", "am_fenrir": "a", "am_liam": "a", "am_michael": "a", "am_onyx": "a", "am_puck": "a", "am_santa": "a",
+    "bf_alice": "b", "bf_emma": "b", "bf_isabella": "b", "bf_lily": "b", "bm_daniel": "b", "bm_fable": "b", "bm_george": "b", "bm_lewis": "b",
+    "jf_alpha": "j", "jf_gongitsune": "j", "jf_nezumi": "j", "jf_tebukuro": "j", "jm_kumo": "j",
+    "zf_xiaobei": "z", "zf_xiaoni": "z", "zf_xiaoxiao": "z", "zf_xiaoyi": "z", "zm_yunjian": "z", "zm_yunxi": "z", "zm_yunxia": "z", "zm_yunyang": "z",
+    "ef_dora": "e", "em_alex": "e", "em_santa": "e",
+    "ff_siwis": "f",
+    "hf_alpha": "h", "hf_beta": "h", "hm_omega": "h", "hm_psi": "h",
+    "if_sara": "i", "im_nicola": "i",
+    "pf_dora": "p", "pm_alex": "p", "pm_santa": "p"
+}
+
 
 
 
@@ -49,7 +48,12 @@ import soundfile as sf
 
 pipelines = {}
 
-def process(text, lang = "a", voice = "bf_isabella", speed = 1.1):
+def process(text, voice = "af_heart", speed = 1.1):
+
+    lang = "a"
+    if voice in lang_voice_dict:
+        lang = lang_voice_dict[voice]
+    print("using lang:", lang)
 
     if lang in pipelines:
         pipeline = pipelines[lang]
@@ -61,7 +65,7 @@ def process(text, lang = "a", voice = "bf_isabella", speed = 1.1):
     
     
     generator = pipeline(
-        text, voice=voice, # <= change voice here
+        text, voice=voice,
         speed=speed
     )
     
@@ -132,18 +136,13 @@ while True:
             print(data, len(data[2]))
     
             text = truncate_after_n_newlines(data[2], 50)
-            
-            voice = "bf_isabella"
-            if data[5] in voices:
-                voice = data[5]
-                print("use voice:", voice)
-    
+            voice = data[5]
             speed = data[6]
             speed = min(4,max(0.25,speed))
 
             process_t0 = time.time()
             
-            audio = process(text, voice = voice, lang = 'a' if voice[0] == 'a' else 'b', speed = speed)
+            audio = process(text, voice = voice, speed = speed)
 
             print("processing took", time.time()-process_t0, "seconds")
             # Save as a single file
