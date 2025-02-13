@@ -4,7 +4,7 @@ from ftplib import *
 # FTP server details
 ftp_server = 'benundmarvpromotions.lima-ftp.de'
 ftp_user = 'benundmarvpromotions'
-ftp_password = 'gWEhrtjanrgy'
+ftp_password = 'defrtrn2343fdsgfcdf'
 
 model_save_name = "model.weights.h5"
 file_to_upload = model_save_name
