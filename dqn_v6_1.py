@@ -554,9 +554,8 @@ def tstep(data):
         model_return = model(states, training=True)
         mask_return = model_return * masks
         estimated_q_values = tf.math.reduce_sum(mask_return, axis=1)
-        #print(estimated_q_values, mask_return, model_return, masks)
-        loss_e = tf.math.square(target_q_values - estimated_q_values)
-        loss = tf.reduce_mean(loss_e)
+        
+        loss = tf.keras.losses.Huber(delta=1.0)(target_q_values, estimated_q_values)
 
 
     gradient = t.gradient(loss, model.trainable_variables)
