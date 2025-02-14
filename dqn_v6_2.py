@@ -98,6 +98,17 @@ with strategy.scope():
   lambda inputs: tf.repeat(tf.expand_dims(inputs, axis = 1), repeats=60, axis=1)
   )(pdas)
 
+    
+
+  concatenated_m15_at = tf.keras.layers.Concatenate(axis=-1)([chart_m15, pdas_repeated])
+  m15_at = tf.keras.layers.Dense(256)(concatenated_m15_at)
+  m15_at = lrelu(m15_at)
+  m15_at = tf.keras.layers.Dense(128)(m15_at)
+  m15_at = lrelu(m15_at)
+  m15_at = tf.keras.layers.Dense(64)(m15_at)
+  m15_at = lrelu(m15_at)
+  m15_at = tf.keras.layers.LSTM(64)(m15_at)
+
   concatenated_m5_at = tf.keras.layers.Concatenate(axis=-1)([chart_m5, pdas_repeated])
   m5_at = tf.keras.layers.Dense(256)(concatenated_m5_at)
   m5_at = lrelu(m5_at)
@@ -105,7 +116,7 @@ with strategy.scope():
   m5_at = lrelu(m5_at)
   m5_at = tf.keras.layers.Dense(64)(m5_at)
   m5_at = lrelu(m5_at)
-  m5_at = tf.keras.layers.LSTM(128)(m5_at)
+  m5_at = tf.keras.layers.LSTM(64)(m5_at)
 
   concatenated_m1_at = tf.keras.layers.Concatenate(axis=-1)([chart_m1, pdas_repeated])
   m1_at = tf.keras.layers.Dense(256)(concatenated_m1_at)
@@ -114,17 +125,13 @@ with strategy.scope():
   m1_at = lrelu(m1_at)
   m1_at = tf.keras.layers.Dense(64)(m1_at)
   m1_at = lrelu(m1_at)
-  m1_at = tf.keras.layers.LSTM(128)(m1_at)
+  m1_at = tf.keras.layers.LSTM(64)(m1_at)
 
     
   #c = tf.keras.layers.Concatenate()([f15, f5, f1, pdas, minutes_embed_flat, current_position, scaled_open_profit])
-  c = tf.keras.layers.Concatenate()([f15, f5, f1, pdas, minutes_embed_flat, current_position, m1_at, m5_at])
+  c = tf.keras.layers.Concatenate()([pdas, minutes_embed_flat, current_position, m1_at, m5_at, m15_at])
 
-  d = tf.keras.layers.Dense(4096)(c)
-  d = lrelu(d)
-  d = tf.keras.layers.Dense(4096)(d)
-  d = lrelu(d)
-  d = tf.keras.layers.Dense(2048)(d)
+  d = tf.keras.layers.Dense(1024)(c)
   d = lrelu(d)
   d = tf.keras.layers.Dense(1024)(d)
   d = lrelu(d)
@@ -143,7 +150,7 @@ with strategy.scope():
   target_model = tf.keras.Model(inputs = [chart_m15, chart_m5, chart_m1, pdas, minutes, current_position], outputs = outputs)
 
 
-  optimizer = tf.keras.optimizers.Adam(learning_rate = 0.000001)
+  optimizer = tf.keras.optimizers.Adam(learning_rate = 0.000005)
 
 
 
@@ -553,9 +560,8 @@ def tstep(data):
         model_return = model(states, training=True)
         mask_return = model_return * masks
         estimated_q_values = tf.math.reduce_sum(mask_return, axis=1)
-        #print(estimated_q_values, mask_return, model_return, masks)
-        loss_e = tf.math.square(target_q_values - estimated_q_values)
-        loss = tf.reduce_mean(loss_e)
+    
+        loss = tf.keras.losses.Huber(delta=1.0)(target_q_values, estimated_q_values)
 
 
     gradient = t.gradient(loss, model.trainable_variables)
