@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[4]:
 
 
 import time
@@ -14,7 +14,7 @@ start_time = time.time()
 
 
 
-# In[2]:
+# In[5]:
 
 
 import os
@@ -33,7 +33,7 @@ from save_and_load import *
 from Candle import Candle
 import matplotlib.pyplot as plt
 
-candles = obj_load("NQ_1")[600000:]
+candles = obj_load("NQ_1")
 len(candles)
 
 

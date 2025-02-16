@@ -33,7 +33,7 @@ from save_and_load import *
 from Candle import Candle
 import matplotlib.pyplot as plt
 
-candles = obj_load("NQ_1")[600000:]
+candles = obj_load("NQ_1")
 len(candles)
 
 
