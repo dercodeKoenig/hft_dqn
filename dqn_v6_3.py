@@ -151,7 +151,7 @@ with strategy.scope():
     target_model = tf.keras.Model(inputs = [chart_m15, chart_m5, chart_m1, pdas, minutes, current_position], outputs = outputs)
     
     
-    optimizer = tf.keras.optimizers.Adam(learning_rate = 0.000001)
+    optimizer = tf.keras.optimizers.Adam(learning_rate = 0.00001)
     
 
 
