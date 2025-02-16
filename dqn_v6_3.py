@@ -42,7 +42,7 @@ strategy
 gamma = 0.99
 memory_len = 100000
 sarts_memory = deque(maxlen = memory_len)
-batch_size = 512
+batch_size = 1024
 e = 2
 slm = 1.5
 steps_before_learn = 1
