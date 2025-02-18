@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[4]:
+# In[1]:
 
 
 import time
@@ -14,7 +14,7 @@ start_time = time.time()
 
 
 
-# In[5]:
+# In[2]:
 
 
 import os
@@ -44,7 +44,7 @@ len(candles)
 num_actions = 3
 
 
-# In[4]:
+# In[ ]:
 
 
 lrelu = tf.keras.layers.LeakyReLU(0.05)
@@ -79,7 +79,9 @@ m5_at = tf.keras.layers.Dense(512)(m5_at)
 m5_at = lrelu(m5_at)
 m5_at = tf.keras.layers.Dense(256)(m5_at)
 m5_at = lrelu(m5_at)
-m5_at = tf.keras.layers.LSTM(1024)(m5_at)
+m5_at = tf.keras.layers.LSTM(1024, return_sequences=True)(m5_at)
+m5_at = tf.keras.layers.LSTM(1024, return_sequences=True)(m5_at)
+m5_at = tf.keras.layers.LSTM(1024, return_sequences=False)(m5_at)
 
 concatenated_m1_at = tf.keras.layers.Concatenate(axis=-1)([chart_m1, pdas_repeated])
 m1_at = tf.keras.layers.Dense(512)(concatenated_m1_at)
@@ -90,7 +92,9 @@ m1_at = tf.keras.layers.Dense(512)(m1_at)
 m1_at = lrelu(m1_at)
 m1_at = tf.keras.layers.Dense(256)(m1_at)
 m1_at = lrelu(m1_at)
-m1_at = tf.keras.layers.LSTM(1024)(m1_at)
+m1_at = tf.keras.layers.LSTM(1024, return_sequences=True)(m1_at)
+m1_at = tf.keras.layers.LSTM(1024, return_sequences=True)(m1_at)
+m1_at = tf.keras.layers.LSTM(1024, return_sequences=False)(m1_at)
 
 
 #c = tf.keras.layers.Concatenate()([f15, f5, f1, pdas, minutes_embed_flat, current_position, scaled_open_profit])
@@ -119,16 +123,14 @@ outputs = tf.keras.layers.Activation('linear', dtype='float32')(q_values)
 
 model = tf.keras.Model(inputs = [chart_m15, chart_m5, chart_m1, pdas, minutes, current_position], outputs = outputs)
 
-model.summary()
 
-
-# In[5]:
+# In[ ]:
 
 
 model.load_weights("model.weights.h5")
 
 
-# In[6]:
+# In[ ]:
 
 
 def relative (value, center, r):
@@ -193,7 +195,7 @@ class Position:
         self.direction = direction
 
 
-# In[7]:
+# In[ ]:
 
 
 def step(index):
@@ -363,7 +365,7 @@ def step(index):
 
 
 
-# In[8]:
+# In[ ]:
 
 
 m = MultiTimeframeCandleManager()
