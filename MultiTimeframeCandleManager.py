@@ -3,6 +3,7 @@ from collections import deque
 import copy
 from Candle import Candle
 from collections import deque
+import numpy as np
 
 class MultiTimeframeCandleManager:
     
@@ -388,5 +389,55 @@ class MultiTimeframeCandleManager:
             
             ret_candles
         ]
+
+
+
+
+
+def relative (value, center, r):
+        return (value - center) / r
+
+def ret_to_scaled_inputs(ret):
+
+    midnight_open, midnight_opening_range_high,midnight_opening_range_low, pdas, current_close, current_time, charts = ret
+
+
+    center = (midnight_opening_range_high + midnight_opening_range_low) / 2
+    r = max(0.0001,(midnight_opening_range_high - midnight_opening_range_low) / 2)
+
+    pda_rel = []
+    pda_rel.append(relative(midnight_open, center, r))
+    for pda in pdas[0:9+9+15]:
+        pda_rel.append(relative(pda, center, r))
+    for index in range(9+9+15,9+9+15+5*12):
+        ## highs lows are like this [h, h_taken, l, l_taken]
+        ## the bools should not be scaled
+        if (index - 9+9+15) % 2 == 0:
+            pda_rel.append(relative(pdas[index], center, r))
+        else:
+            pda_rel.append(pdas[index])
+
+    pda_np = np.array(pda_rel)
+
+    current_minutes = current_time.hour * 60 + current_time.minute
+
+    charts_array = []
+    for candlesticks in charts:
+        charts_array.append([])
+        for candle in candlesticks:
+            o = relative(candle.o, center, r)
+            h = relative(candle.h, center, r)
+            l = relative(candle.l, center, r)
+            c = relative(candle.c, center, r)
+            charts_array[-1].append([o,h,l,c])
+
+    m15_np = np.array(charts_array[0], dtype="float32")
+    m5_np = np.array(charts_array[1], dtype="float32")
+    m1_np = np.array(charts_array[2], dtype="float32")
+
+    return [m15_np, m5_np, m1_np, pda_np, current_minutes]
+
+
+
 
 
