@@ -429,7 +429,8 @@ def ret_to_scaled_inputs(ret):
             h = relative(candle.h, center, r)
             l = relative(candle.l, center, r)
             c = relative(candle.c, center, r)
-            charts_array[-1].append([o,h,l,c])
+            t = candle.t.hour * 60 + candle.t.minute
+            charts_array[-1].append([o,h,l,c, t])
 
     m15_np = np.array(charts_array[0], dtype="float32")
     m5_np = np.array(charts_array[1], dtype="float32")
