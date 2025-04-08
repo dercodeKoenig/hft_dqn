@@ -69,10 +69,14 @@ def make_train_data(candles_file):
             if long_stop == False and nch > tplong:
                 long_hit = True
                 break
-    
+        
+        index += 1
+        
         #print(long_hit, short_hit, short_stop, long_stop)
-    
-        x = ret_to_scaled_inputs(ret)
+        try:
+            x = ret_to_scaled_inputs(ret)
+        except IndexError:
+            continue
         y = 0
         if long_hit:
             y=1
@@ -86,7 +90,7 @@ def make_train_data(candles_file):
             batch_index+=1
             train_data = []
     
-        index += 1
+        
 
     if len(train_data) > 0:
             obj_save(train_data, candles_file.split("/")[-1]+"_train_"+str(batch_index))
