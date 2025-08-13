@@ -8,7 +8,7 @@ import numpy as np
 class MultiTimeframeCandleManager:
     
     def __init__(self):
-        l = 60
+        l = 480
         self.m1_candles = deque(maxlen = l)
         self.m5_candles = deque(maxlen = l)
         self.m15_candles = deque(maxlen = l)
