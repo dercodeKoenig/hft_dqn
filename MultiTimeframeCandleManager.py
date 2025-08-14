@@ -436,7 +436,7 @@ def ret_to_scaled_inputs(ret):
     m5_np = np.array(charts_array[1], dtype="float32")
     m1_np = np.array(charts_array[2], dtype="float32")
 
-    return [m15_np, m5_np, m1_np, pda_np, current_minutes]
+    return [m15_np, m5_np, m1_np, pda_np]
 
 
 

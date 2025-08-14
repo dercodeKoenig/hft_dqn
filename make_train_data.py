@@ -28,10 +28,8 @@ def make_train_data(candles_file):
         ret = m.push_m1_candle(candles[index])
         index += 1
     
-    while True:
-        if index >= len(candles)-21:
-            break
-            
+    for index in tqdm(range(index, len(candles)-21)):
+
         ret = m.push_m1_candle(candles[index])
         midnight_open, midnight_opening_range_high,midnight_opening_range_low, pdas, current_close, current_time, charts = ret
     
@@ -69,9 +67,7 @@ def make_train_data(candles_file):
             if long_stop == False and nch > tplong:
                 long_hit = True
                 break
-        
-        index += 1
-        
+                
         #print(long_hit, short_hit, short_stop, long_stop)
         try:
             x = ret_to_scaled_inputs(ret)
@@ -85,7 +81,7 @@ def make_train_data(candles_file):
     
         train_data.append((x,y))
 
-        if len(train_data) >= 1000000:
+        if len(train_data) >= 50000:
             obj_save(train_data, candles_file.split("/")[-1]+"_train_"+str(batch_index))
             batch_index+=1
             train_data = []
